@@ -37,14 +37,28 @@ def make_track(seed: int, radius: float = 40.0, width: float = 3.5, spacing: flo
     #the derivative here is actually negative when angle is increasing  
     inner = np.stack([xs + nx*width/2, ys + ny*width/2], axis=1)
     outer = np.stack([xs - nx*width/2, ys - ny*width/2], axis=1)
-    fig, ax = plt.subplots(figsize=(8,8))
 
-    ax.scatter(inner[:, 0], inner[:, 1], c='tab:blue', s=20, label='inner')
-    ax.scatter(outer[:, 0], outer[:, 1], c='tab:orange', s=20, label='outer')
-    ax.plot(xs, ys, 'k--', lw=0.8, alpha=0.5, label='centerline')
-    ax.set_aspect('equal')
-    ax.legend()
-    plt.show()
-   
+    # display the track so far ->
+    # fig, ax = plt.subplots(figsize=(8,8))
+    # ax.scatter(inner[:, 0], inner[:, 1], c='tab:blue', s=20, label='inner')
+    # ax.scatter(outer[:, 0], outer[:, 1], c='tab:orange', s=20, label='outer')
+    # ax.plot(xs, ys, 'k--', lw=0.8, alpha=0.5, label='centerline')
+    # ax.set_aspect('equal')
+    # ax.legend()
+    # plt.show()
 
-make_track(0)
+    inner += rng.normal(0, noise_std, inner.shape)
+    outer += rng.normal(0, noise_std, outer.shape) 
+    inner = inner[rng.random(len(inner)) > dropout]
+    outer = outer[rng.random(len(outer)) > dropout]
+
+    cones = np.vstack([inner, outer]); color = np.concatenate([np.zeros(len(inner), dtype=np.int8), np.ones(len(outer), dtype=np.int8)])
+    perm = rng.permutation(len(cones))
+    color = color[perm]
+    cones = cones[perm]
+
+    return Track(cones = cones, color = color, truth = np.stack([xs, ys], axis=1), width = width, length = L)
+
+if __name__ == "__main__":
+    t = make_track(0)
+    print(len(t.cones), "cones", t.length, "m lap")
