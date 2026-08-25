@@ -11,8 +11,14 @@ class Track:
     width: float
     length: float
 
+def save(track, path):
+    np.savez(path, cones = track.cones, color = track.color, truth = track.truth, width = track.width, length = track.length)
 
-def make_track(seed: int, radius: float = 40.0, width: float = 3.5, spacing: float = 5.0, noise_std: float = 0.05, dropout: float = 0.07, harmonics: tuple = ((2, 7.0), (3, 4.0), (5, 2.5))):
+def load(path):
+    z = np.load(path)
+    return Track(z['cones'], z['color'], z['truth'], z['width'], z['length'])
+
+def make_track(seed: int, radius: float = 40.0, width: float = 3.5, spacing: float = 5.0, noise_std: float = 0.05, dropout: float = 0.07, harmonics: tuple = ((2, 7.0), (3, 4.0), (5, 2.5))) -> Track:
     #start with creating a circle with 2000 points in polar form
     rng = np.random.default_rng(seed)
     th = np.linspace(0, 2*np.pi, 2000, endpoint=False)
@@ -61,4 +67,5 @@ def make_track(seed: int, radius: float = 40.0, width: float = 3.5, spacing: flo
 
 if __name__ == "__main__":
     t = make_track(0)
+    
     print(len(t.cones), "cones", t.length, "m lap")
