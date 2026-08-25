@@ -35,3 +35,11 @@ algorithm:
 5. bonus: model what the line would look like if we took a random triangulation vs delaunays to observe the difference (if any)
 
 track.py -> generate a track, deformed circle with blue cones on inside and yellow cones on outside, with positional noise and shuffled array to simulate real data
+
+centerline.py -> delaunay on cones, keep blue to yellow edges, order their midpoints by greedily connecting them 
+
+path.py -> create a periodic spline over the midpoints, curvature, speed profile
+
+
+Removing long edge outliers which would throw off the midpoint ->
+![Cross-edge length distribution](figures/edge_lengths.png)
