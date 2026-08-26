@@ -49,12 +49,7 @@ def order_pts(t, mids, radius=20.0):
 
 
 
-def densify(truth, n=4000):
-    d = np.linalg.norm(np.diff(truth, axis=0, append=truth[:1]), axis=1)
-    s = np.concatenate([[0], d.cumsum()[:-1]])
-    q = np.linspace(0, d.sum(), n, endpoint=False)
-    return np.stack([np.interp(q, s, truth[:, 0]),
-                     np.interp(q, s, truth[:, 1])], axis=1)
+
 
 
 def offsets(mids, truth):
@@ -77,19 +72,19 @@ def plot_track(t, E, mids, ordered):
     ax.legend()
     plt.show()
 
-
+def midpoints(t, max_edge=None):
+    E = cross_edges(t)
+    lens = np.linalg.norm(t.cones[E[:, 0]] - t.cones[E[:, 1]], axis=1)
+    E = E[lens <= 1.3 * np.hypot(5.0, t.width)] # THE FILTER 
+    return (t.cones[E[:, 0]] + t.cones[E[:, 1]]) / 2
 if __name__ == "__main__":
     max_gap = 0
     count = 0
     print(f"{'seed':>4} {'n':>4} {'mean':>7} {'p95':>7} {'max':>7}   cut")
-    for seed in range(6):
+    for seed in range(1,2):
         t = make_track(seed)
-        E = cross_edges(t)
-        MAX_EDGE = 1.3 * np.hypot(5.0, t.width)
-        lens = np.linalg.norm(t.cones[E[:, 0]] - t.cones[E[:, 1]], axis=1)
-        mids = (t.cones[E[:, 0]] + t.cones[E[:, 1]]) / 2
-        mask = lens <= MAX_EDGE
-       
+        mids = midpoints(t)
+        E = cross_edges(t) 
         # for name, m in [("all", mids), ("cut", mids[mask])]:
         #     o = offsets(m, t.truth)
         #     tag = f"{seed:>4}" if name == "all" else "    "

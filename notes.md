@@ -56,3 +56,41 @@ Edge-length filtering: Cross edges above 8.0 meters are removed. On 50 generated
 
 
 greedy algorithm in centerline needs a radius of 20 meters for 0 failiures over 1000 seeds
+
+SEED = 1
+
+        Smooth Values compared (offset comparison -> higher number is WORSE):
+
+       0  mean 0.1039  p95 0.2853  max 0.7524
+       1  mean 0.1257  p95 0.3168  max 0.4866
+       5  mean 0.2066  p95 0.4739  max 0.5310
+      20  mean 0.3839  p95 1.0853  max 1.2202
+      50  mean 0.5257  p95 1.2084  max 1.5266
+     100  mean 0.8471  p95 1.5593  max 1.8375
+     200  mean 1.2001  p95 2.3303  max 2.7235
+
+        Outlier filter on vs off test (removing midpoints where edge_length is greater than ~8.0):
+
+FILTER OFF:
+       0  mean 0.1039  p95 0.2853  max 0.7524
+       1  mean 0.1257  p95 0.3168  max 0.4866
+       5  mean 0.2066  p95 0.4739  max 0.5310
+      20  mean 0.3839  p95 1.0853  max 1.2202
+      50  mean 0.5257  p95 1.2084  max 1.5266
+     100  mean 0.8471  p95 1.5593  max 1.8375
+     200  mean 1.2001  p95 2.3303  max 2.7235
+FILTER ON:
+      0  mean 0.0828  p95 0.2137  max 0.3761
+       1  mean 0.1123  p95 0.2608  max 0.3215
+       5  mean 0.2195  p95 0.5204  max 0.6461
+      20  mean 0.4423  p95 0.8981  max 1.0179
+      50  mean 0.6563  p95 1.3990  max 1.6485
+     100  mean 0.9158  p95 1.9390  max 2.4301
+     200  mean 1.2620  p95 2.3769  max 2.5677
+
+At low smoothing values (0 to 1), filter on seems to improve accuracy across mean, 95th percentile and maximum
+At higher smoothin values (200), filter decreases accuracy across mean and 95th percentile but produces a lower max offset
+
+Best combination seems to be: Smoothing 1 with filter on
+
+Seems consistent throughout multiple seeds as well
