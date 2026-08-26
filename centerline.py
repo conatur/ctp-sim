@@ -14,7 +14,7 @@ def cross_edges(t):
     E = np.array(sorted(edges))
     return E[t.color[E[:, 0]] != t.color[E[:, 1]]]
 
-def order_pts(t, mids, radius=8.0):
+def order_pts(t, mids, radius=11.0):
     tree = KDTree(mids)
     pos = t.truth[0]
     direction = t.truth[20] - t.truth[0]
@@ -57,7 +57,7 @@ def offsets(mids, truth):
     return KDTree(truth).query(mids)[0]
 
 
-def plot_track(t, E, mids):
+def plot_track(t, E, mids, ordered):
     fig, ax = plt.subplots(figsize=(9, 9))
     for i, j in E:
         ax.plot([t.cones[i, 0], t.cones[j, 0]],
@@ -68,14 +68,16 @@ def plot_track(t, E, mids):
     closed = np.vstack([t.truth, t.truth[:1]])
     #ax.plot(*closed.T, "--", c='tab:green', lw=1.6, zorder=2, label='truth')
     ax.scatter(*t.truth.T, c='tab:green', s=15, marker='x', zorder=2, label='truth')
+    ax.plot(*ordered.T, '-', c='tab:purple', lw=1.5, zorder=5, label='greedy')
     ax.set_aspect('equal')
     ax.legend()
     plt.show()
 
 
 if __name__ == "__main__":
+    max_gap = 0
     print(f"{'seed':>4} {'n':>4} {'mean':>7} {'p95':>7} {'max':>7}   cut")
-    for seed in range(50):
+    for seed in range(153,154):
         t = make_track(seed)
         E = cross_edges(t)
         MAX_EDGE = 1.3 * np.hypot(5.0, t.width)
@@ -91,4 +93,14 @@ if __name__ == "__main__":
 
         if mask.sum() < len(mask):
             print(f"     removed offsets: {np.round(offsets(mids[~mask], t.truth), 2)}")
- 
+        
+        ordered = order_pts(t, mids)
+        gaps = np.linalg.norm(np.diff(ordered, axis=0), axis=1)
+        print(len(ordered), "of", len(mids))
+        #print(f"gaps: median {np.median(gaps):.2f}  max {gaps.max():.2f}")
+        print(f"closed: {np.linalg.norm(ordered[-1] - ordered[0]) < 8.0}")
+        print(f"length ratio: {gaps.sum() / t.length:.3f}")
+        #max_gap = max(max_gap, gaps.max())
+        plot_track(t, E, mids, ordered)
+    print(max_gap)
+    
