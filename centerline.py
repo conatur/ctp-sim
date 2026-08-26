@@ -14,7 +14,7 @@ def cross_edges(t):
     E = np.array(sorted(edges))
     return E[t.color[E[:, 0]] != t.color[E[:, 1]]]
 
-def order_pts(t, mids, radius=11.0):
+def order_pts(t, mids, radius=20.0):
     tree = KDTree(mids)
     pos = t.truth[0]
     direction = t.truth[20] - t.truth[0]
@@ -23,17 +23,21 @@ def order_pts(t, mids, radius=11.0):
     path, visited = [], set()
     while True:
         cand = np.array(tree.query_ball_point(pos, r=radius), dtype=int)
+        MIN_STEP = 0.5
+        if cand.size == 0:
+            break
         cand = cand[[i not in visited for i in cand]] if cand.size else cand # only get unvisited points
         if cand.size == 0:
             break
 
-        vecs = mids[cand] - pos
-        cand = cand[vecs @ direction > 0] # if angle between direction previous and new direction is obtuse, avoids going backward
-        if cand.size == 0:
+        v = mids[cand] - pos
+        dist = np.linalg.norm(v, axis=1)
+        ok = (dist > MIN_STEP) & (v @ direction > 0)
+        if not ok.any():
             break
 
-        d = np.linalg.norm(mids[cand] - pos, axis=1) # distance between candidates and current pos
-        idx = cand[d.argmin()] # smallest distance
+        cand, dist = cand[ok], dist[ok]
+        idx = cand[dist.argmin()]
 
         direction = mids[idx] - pos
         direction /= np.linalg.norm(direction)
@@ -68,7 +72,7 @@ def plot_track(t, E, mids, ordered):
     closed = np.vstack([t.truth, t.truth[:1]])
     #ax.plot(*closed.T, "--", c='tab:green', lw=1.6, zorder=2, label='truth')
     ax.scatter(*t.truth.T, c='tab:green', s=15, marker='x', zorder=2, label='truth')
-    ax.plot(*ordered.T, '-', c='tab:purple', lw=1.5, zorder=5, label='greedy')
+    ax.plot(*ordered.T, '-', c='tab:purple', lw=2, zorder=5, label='greedy')
     ax.set_aspect('equal')
     ax.legend()
     plt.show()
@@ -76,8 +80,9 @@ def plot_track(t, E, mids, ordered):
 
 if __name__ == "__main__":
     max_gap = 0
+    count = 0
     print(f"{'seed':>4} {'n':>4} {'mean':>7} {'p95':>7} {'max':>7}   cut")
-    for seed in range(153,154):
+    for seed in range(6):
         t = make_track(seed)
         E = cross_edges(t)
         MAX_EDGE = 1.3 * np.hypot(5.0, t.width)
@@ -85,22 +90,26 @@ if __name__ == "__main__":
         mids = (t.cones[E[:, 0]] + t.cones[E[:, 1]]) / 2
         mask = lens <= MAX_EDGE
        
-        for name, m in [("all", mids), ("cut", mids[mask])]:
-            o = offsets(m, t.truth)
-            tag = f"{seed:>4}" if name == "all" else "    "
-            print(f"{tag} {len(m):>4} {o.mean():>7.3f} "
-                  f"{np.percentile(o, 95):>7.3f} {o.max():>7.3f}   {name}")
+        # for name, m in [("all", mids), ("cut", mids[mask])]:
+        #     o = offsets(m, t.truth)
+        #     tag = f"{seed:>4}" if name == "all" else "    "
+        #     print(f"{tag} {len(m):>4} {o.mean():>7.3f} "
+        #           f"{np.percentile(o, 95):>7.3f} {o.max():>7.3f}   {name}")
 
-        if mask.sum() < len(mask):
-            print(f"     removed offsets: {np.round(offsets(mids[~mask], t.truth), 2)}")
+        # if mask.sum() < len(mask):
+        #     print(f"     removed offsets: {np.round(offsets(mids[~mask], t.truth), 2)}")
         
         ordered = order_pts(t, mids)
         gaps = np.linalg.norm(np.diff(ordered, axis=0), axis=1)
-        print(len(ordered), "of", len(mids))
-        #print(f"gaps: median {np.median(gaps):.2f}  max {gaps.max():.2f}")
-        print(f"closed: {np.linalg.norm(ordered[-1] - ordered[0]) < 8.0}")
-        print(f"length ratio: {gaps.sum() / t.length:.3f}")
-        #max_gap = max(max_gap, gaps.max())
+        # print(len(ordered), "of", len(mids))
+        # print(f"gaps: median {np.median(gaps):.2f}  max {gaps.max():.2f}")
+        # print(f"closed: {np.linalg.norm(ordered[-1] - ordered[0]) < 8.0}")
+        # print(f"length ratio: {gaps.sum() / t.length:.3f}")
+        if np.linalg.norm(ordered[-1] - ordered[0]) > 20.0:
+            #print(ordered[-1], ordered[0])
+            count += 1
+        max_gap = max(max_gap, gaps.max())
         plot_track(t, E, mids, ordered)
-    print(max_gap)
+    print(f"max gap: {max_gap}")
+    print(f"unclosed count: {count}")
     
