@@ -66,6 +66,6 @@ def make_track(seed: int, radius: float = 40.0, width: float = 3.5, spacing: flo
     return Track(cones = cones, color = color, truth = np.stack([cx, cy], axis=1), width = width, length = L)
 
 if __name__ == "__main__":
-    t = make_track(0)
+    t = make_track(5)
     
     print(len(t.cones), "cones", t.length, "m lap")
