@@ -94,3 +94,7 @@ At higher smoothin values (200), filter decreases accuracy across mean and 95th 
 Best combination seems to be: Smoothing 1 with filter on
 
 Seems consistent throughout multiple seeds as well
+
+Spline-to-truth max 0.32 m; driven-to-truth max 0.59 m. the controller contributes roughly 0.27 m of corner-cutting on top of the path's own deviation from truth
+
+following the curvature speed profile rather than the constant 8.0 m/s set, decreased lap time from 34.9s to 30.6s but increased maximum cross track error from 0.59 to 0.69 (17% increase). still well under 1.75m track width limit.
