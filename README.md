@@ -7,7 +7,7 @@ Recovers a driveable racing line from unordered, noisy cone positions and simula
 ## Problem
 Formula SAE driverless requires the vehicle to be operated autonomously on a course marked by colored cones, blue on one side and yellow on the other. The layout is not known to the car in advance, so it must build a driveable centerline line in real time from cone positions and then track it.
 
-This project recovers the centerline and tracks it on synthetic cone data, with perception assumed. Cone data is unordered, noisy, and a fraction are missing. 
+This project recovers the centerline and tracks it on synthetic cone data, with perception assumed. Cone data is unordered, noisy, and some cones are missing to simulate data inaccuracy during real races. 
 
 ## Pipeline
 
@@ -20,6 +20,10 @@ This project recovers the centerline and tracks it on synthetic cone data, with 
 `sim.py` -> Vehicle simulation: a kinematic bicycle model with a 1.55 m wheelbase is simulated in 0.02 second steps over the path returned by `path.py`. Steering comes from pure pursuit: the controller aims at a point on the path a lookahead distance away. This distance scales with speed, and the steering angle is clamped to ±25°. The car accelerates or brakes in proportion to how far it is from the speed profile's target, clamped by the acceleration and braking limits used to build the profile. All states are recorded and are used to construct the animation and the cross-track error measurement. 
 
 ## Findings
+
+**Edge-length filtering removes outliers without affecting median accuracy**
+ Blue - yellow edge lengths are bimodal, with straight edges across the track clustered at the track width (3.5 m) and diagonal edges from cone *i* to cone *i* + 1 at √(width² + spacing²) ≈ 6.1 m. However, there are some outliers where a dropped cone forces Delaunay to bridge a large gap which produces midpoints far off the centerline. 
+hello
 
 
 ## Limitations
