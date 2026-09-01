@@ -31,7 +31,7 @@ def plot(profile, p):
     plt.show()
     
 
-def sim(t):
+def sim(t, p):
     WHEELBASE = 1.5
     DT = 0.02
     MAX_STEER = np.radians(25)
@@ -40,7 +40,7 @@ def sim(t):
     A_BRAKE = 6.0
     A_ACCEL = 4.0
     K_P = 1.0
-    p = spline(t)
+    
     x, y = p.path[0]
     dx, dy = p.path[10]-p.path[0]
     theta = np.arctan2(dy, dx)
@@ -125,5 +125,7 @@ def animate(t, p, profile, out='figures/lap.gif', stride=5, dt=0.02):
 if __name__ == "__main__":
     seed = 3 # CHANGE SEED TO ANY NUMBER YOU WANT AND PRESS RUN, ANIMATION WILL APPEAR IN FIGURES FOLDER AS A GIF (usually takes up to 30 seconds for the animation)
     t = make_track(seed)
-    animate(t, spline(t), sim(t), f'figures/lap{seed}.gif')
-    report(sim(t), t, DT=0.02)
+    p = spline(t)
+    profile = sim(t, p)
+    animate(t, p, profile, f'figures/lap{seed}.gif')
+    report(profile, t, DT=0.02)
