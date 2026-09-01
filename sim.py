@@ -126,4 +126,4 @@ if __name__ == "__main__":
     seed = 3 # CHANGE SEED TO ANY NUMBER YOU WANT AND PRESS RUN, ANIMATION WILL APPEAR IN FIGURES FOLDER AS A GIF (usually takes up to 30 seconds for the animation)
     t = make_track(seed)
     animate(t, spline(t), sim(t), f'figures/lap{seed}.gif')
-    #report(sim(t), t, DT=0.02)
+    report(sim(t), t, DT=0.02)
