@@ -21,9 +21,29 @@ This project recovers the centerline and tracks it on synthetic cone data, with 
 
 ## Findings
 
-**Edge-length filtering removes outliers without affecting median accuracy**
- Blue - yellow edge lengths are bimodal, with straight edges across the track clustered at the track width (3.5 m) and diagonal edges from cone *i* to cone *i* + 1 at √(width² + spacing²) ≈ 6.1 m. However, there are some outliers where a dropped cone forces Delaunay to bridge a large gap which produces midpoints far off the centerline. 
-hello
+1. **Edge-length filtering removes outliers without affecting median accuracy** 
+
+Blue - yellow edge lengths are bimodal, with straight edges across the track clustered at the track width (3.5 m) and diagonal edges from cone *i* to cone *i* + 1 at √(width² + spacing²) ≈ 6.1 m. However, there are some outliers where a dropped cone forces Delaunay to bridge a large gap which produces midpoints far off the centerline. 
+
+![Measure of edge lengths between blue to yellow cones](figures/edge_lengths.png)
+
+Rejecting edges over 8.0 m removes 0.73% of midpoints across 50 tracks (5,055 edges). Although typical accuracy is mostly unchanged (median per track offset 0.0825 m -> 0.0810 m), the tail was truncated: number of tracks containing an outlier more than 0.5 m off center fell from 11 to 0. Additionally, for the 24 out of 50 tracks the filter fired on, it improves the maximum on 16 of those of which median maximum falls from 0.565m to 0.243m.
+
+2. **Spline smoothing must balance position accuracy and curvature accuracy**
+
+The smoothing parameter has opposite optima for the two quantities the spline must provide: position and curvature. Minumum position error obviously occurs at `s = 0` where the curve interpolates every midpoints exactly. But doing this amplifies the 5 cm cone noise as curvature is a second derivative: the curvature oscillates between ±0.25 m⁻¹ against a true peak of 0.063 m⁻¹, roughly 4 times sharper than the real curvature. At `s = 5`, this noise is gone but a small reversal in curvature at 70 m is smoothed away entirely.
+
+`s = 1` was chosen as the best as curvature stays within 15% of ground truth and position error is within 30% of `s = 0` maxima. 
+
+| s | mean (m) | p95 (m) | max (m) |
+|---|----------|---------|---------|
+| 0 | 0.083 | 0.214 | 0.376 |
+| **1** | **0.112** | **0.261** | **0.322** |
+| 5 | 0.220 | 0.520 | 0.646 |
+| 20 | 0.442 | 0.898 | 1.018 |
+
+3. **Greedy ordering requires a large search radius**
+
 
 
 ## Limitations
